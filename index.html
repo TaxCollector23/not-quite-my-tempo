@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Executor for HTML</title>
+
+    <!-- Embedded SVG favicon (data URI) — 3x3 dot grid resembling Chrome's new-tab icon -->
+    <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA0OC' '0nPjxyZWN0IHdpZHRoPSc0OCcgaGVpZ2h0PSc0OCcgcng9JzYnIGZpbGw9JyNGRkZGRkYnIC8+PGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoNiw2KSc+PGNpcmNsZSBjeD0nNicgY3k9JzYnIHI9JzQuNScgZmlsbD0nIzQyODVGNScvPjxjaXJjbGUgY3g9JzI0JyBjeT0nNicgci0nNC41JyBmaWxsPScjRUE0MzM1Jy8+PGNpcmNsZSBjeD0nNDInIGN5PSc2JyByPSc0LjUnIGZpbGw9JyNGQkJDMDU nLz48Y2lyY2xlIGN4PSc2JyBjeT0nMjQ nIHI9JzQuNScgZmlsbD0nIzM0QTg1Jy8+PGNpcmNsZSBjeD0nMjQnIGN5PScyNCcgcj0nNC41JyBmaWxsPScjNDI4NUY1Jy8+PGNpcmNsZSBjeD0nNDInIGN5PScyNCcgcj0nNC41JyBmaWxsPScjRUE0MzM1Jy8+PGNpcmNsZSBjeD0nNicgY3k9JzQyJyByPSc0LjUnIGZpbGw9JyNGQkJDMDU nLz48Y2lyY2xlIGN4PScyNCcgY3k9JzQyJyByPSc0LjUnIGZpbGw9JyMzNEE4NTAnLz48Y2lyY2xlIGN4PSc0MicgY3k9JzQyJyByPSc0LjUnIGZpbGw9JyM0Mjg1RjUnLz48L2c+PC9zdmc+">
+
+    <!-- Optional fallback icon types -->
+    <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA0OCc+PHJlY3Qgd2lkdGg9JzQ4JyBoZWlnaHQ9JzQ4JyByeD0nNicgZmlsbD0nI0ZGRkZGRicvPjxnIHRyYW5zZm9ybT0ndHJhbnNsYXRlKDYsNicpPjxjaXJjbGUgY3g9JzYnIGN5PSc2JyByPSc0LjUnIGZpbGw9JyM0Mjg1RjUnLz48Y2lyY2xlIGN4PScyNCcgY3k9JzYnIHI9JzQuNScgZmlsbD0nI0VBNDMzNScvPjxjaXJjbGUgY3g9JzQyJyBjeT0nNicgci0nNC41JyBmaWxsPScjRkJCRC4wNScvPjwvZz48L3N2Zz4=">
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        color: white;
+        background-color: #000020;
+        background-image: url('https://64.media.tumblr.com/9e19f5a112f04a3cf9b2a2426daac333/tumblr_pte1o02Pju1uzwgsuo1_400.gif');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        overflow-x: hidden;
+      }
+
+      #darkOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 30, 0.85);
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .scroll-container {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 10px 0;
+        border: 2px solid transparent;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        position: relative;
+        z-index: 10;
+      }
+
+      .scroll-content {
+        display: inline-flex;
+      }
+
+      .button {
+        margin-right: 10px;
+        padding: 10px 20px;
+        background-color: rgba(0, 0, 0);
+        color: white;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+      }
+
+      .button:hover {
+        background-color: rgb(0, 229, 255);
+        transform: scale(1.15);
+        box-shadow: 0 0 20px #00e5ff, 0 0 40px #ff00a0;
+        color: black;
+      }
+
+      #fullscreenButton,
+      #toggleModeButton {
+        background-color: rgb(0, 0, 0);
+        color: white;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgb(0, 229, 255);
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        position: relative;
+        z-index: 10;
+        margin: 5px;
+      }
+
+      #fullscreenButton:hover,
+      #toggleModeButton:hover {
+        background-color: rgb(0, 229, 255);
+        box-shadow: 0 0 20px #00e5ff, 0 0 40px #ff00a0;
+        transform: scale(1.1);
+        color: black;
+      }
+
+      .embed {
+        border: 2px solid transparent;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        position: relative;
+        z-index: 10;
+      }
+
+      /* --- Password Screen --- */
+      #lockScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 30, 0.95);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      #passwordBox {
+        padding: 12px 20px;
+        font-size: 16px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        text-align: center;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+        background-color: black;
+        color: white;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        outline: none;
+        width: 380px;
+      }
+
+      #passwordBox::placeholder {
+        color: gray;
+      }
+
+      /* sandbox preview modal */
+      #sandboxModal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.6);
+      }
+      #sandboxContent {
+        width: 90%;
+        max-width: 1000px;
+        height: 80%;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid transparent;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+        display: flex;
+        flex-direction: column;
+      }
+      #sandboxToolbar {
+        padding: 6px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        background: rgba(0,0,0,0.6);
+        align-items: center;
+      }
+      #sandboxIframe {
+        flex: 1;
+        border: none;
+        width: 100%;
+      }
+      .miniBtn {
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        background: black;
+        color: white;
+        font-weight: 700;
+        border: 2px solid transparent;
+        border-image: linear-gradient(to bottom right, #00e5ff, #ff00a0) 1;
+      }
+      .miniBtn:hover { transform: scale(1.05); background: #00e5ff; color: black; }
+
+      /* portal content hidden behind lock until unlocked */
+      #portalContent { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="darkOverlay"></div>
+
+    <!-- LOCK SCREEN -->
+    <div id="lockScreen">
+      <input
+        id="passwordBox"
+        type="password"
+        placeholder="ENTER ANY HTML CODE TO RUN"
+        onkeydown="handleUnlockOrRun(event)"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <!-- PORTAL (initially hidden) -->
+    <div class="scroll-container" id="portalContent">
+      <div class="scroll-content">
+        <img
+          src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXhic291d2wxcGdlbWI5a2gwZWtzYnR5bHRvNGNpbGduN3FwY3l5aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/tV5qjZsXMS4ReNCnY2/giphy.gif"
+          alt="logo"
+          style="width: 50px; height: 50px; z-index: 9999999;"
+        />
+
+        <!-- ALL BUTTONS (copied from your original) -->
+        <button class="button" onclick="changeEmbed('https://algebra.learnnexus.xyz')">Red's Exploit Corner</button>
+        <button class="button" onclick="changeEmbed('https://v4-seven-beryl.vercel.app/search.html')">Art ♡</button>
+        <button class="button" onclick="changeEmbed('https://inter-nu-nine.vercel.app/')">Inter ♡ DONT USE RN</button>
+        <button class="button" onclick="changeEmbed('https://shuttle-six-brown.vercel.app/')">Shuttle ♡</button>
+        <button class="button" onclick="changeEmbed('https://snork-lovat.vercel.app/science')">Snork ♡</button>
+        <button class="button" onclick="changeEmbed('https://deadshot.io')">deadshot</button>
+        <button class="button" onclick="changeEmbed('https://freezeova.global.ssl.fastly.net/index.html')">freezenova</button>
+        <button class="button" onclick="changeEmbed('https://hehe.ajh.boats')">VAULT V8</button>
+        <button class="button" onclick="changeEmbed('https://bflixz.org')">Bflix</button>
+        <button class="button" onclick="changeEmbed('https://demo.emulatorjs.org')">emulatorJS</button>
+        <button class="button" onclick="changeEmbed('https://bulletbros.org')">bulletbros</button>
+        <button class="button" onclick="changeEmbed('https://krunker.io')">krunker</button>
+        <button class="button" onclick="changeEmbed('https://fsh.zone')">fsh zone</button>
+        <button class="button" onclick="changeEmbed('https://ev.io')">ev.io</button>
+        <button class="button" onclick="changeEmbed('https://vapor.global.ssl.fastly.net')">VAPOR</button>
+        <button class="button" onclick="changeEmbed('https://talhaisbetter.my.to')">pizza edition</button>
+        <button class="button" onclick="changeEmbed('https://ytify.pp.ua')">ytify</button>
+        <button class="button" onclick="changeEmbed('https://yancharkin.github.io/SpelunkyClassicHDhtml5/')">spelunky</button>
+        <button class="button" onclick="changeEmbed('https://radical.global.ssl.fastly.net')">Radical</button>
+        <button class="button" onclick="changeEmbed('https://vivek9patel.github.io')">Unbuntu</button>
+        <button class="button" onclick="changeEmbed('https://binjadagoat.global.ssl.fastly.net')">Ghoogle</button>
+        <button class="button" onclick="changeEmbed('https://primarily-striking-crawdad.global.ssl.fastly.net/home.html')">unblockzone</button>
+        <button class="button" onclick="changeEmbed('https://www.multiplication.com/')">multiplication</button>
+        <button class="button" onclick="changeEmbed('https://console.upstage.ai/playground/chat')">Solar AI</button>
+        <button class="button" onclick="changeEmbed('https://www.engineering.com/games/')">engineering</button>
+        <button class="button" onclick="changeEmbed('https://fortzone.net/content/uploads/fortzone-battle-royale/')">fortzone battle royale</button>
+        <button class="button" onclick="changeEmbed('https://test.conyser.cl')">Ghost</button>
+        <button class="button" onclick="changeEmbed('https://jobi.one/#home')">UniUB</button>
+        <button class="button" onclick="changeEmbed('https://learnaboutducks.me/')">DuckHTML</button>
+        <button class="button" onclick="changeEmbed('https://solidscience.virkamafia.fi')">Shadow</button>
+        <button class="button" onclick="changeEmbed('https://9862360916.co.uk')">noblocc</button>
+        <button class="button" onclick="changeEmbed('https://gleesh.a.ssl.fastly.net')">arsenic</button>
+        <button class="button" onclick="changeEmbed('https://hybridph.em.vrancea.org')">phantom</button>
+        <button class="button" onclick="changeEmbed('https://hi52yagwlitc.237775.xyz')">BrunysIXLWork</button>
+        <button class="button" onclick="changeEmbed('https://hardmath.buzz')">Valera</button>
+        <button class="button" onclick="changeEmbed('https://ppxlarr.web.app/index.html')">pxlarr</button>
+        <button class="button" onclick="changeEmbed('https://www.us5-test.dns64.de')">us5</button>
+        <button class="button" onclick="changeEmbed('https://tbg95.s3.amazonaws.com/index.html')">tbg95</button>
+        <button class="button" onclick="changeEmbed('https://ifyoqhwia98h.pennstateoldies.com')">canlite</button>
+        <button class="button" onclick="changeEmbed('https://xen-os.dev')">xen-OS</button>
+        <button class="button" onclick="changeEmbed('https://boredomarcade.xyz')">boredom</button>
+        <button class="button" onclick="changeEmbed('https://loungef2x-t.global.ssl.fastly.net')">loungef2x</button>
+        <button class="button" onclick="changeEmbed('https://stay-in-school-kids.ongisnade.co.id')">PeteZah</button>
+        <button class="button" onclick="changeEmbed('https://mexi.rest')">MexiMath</button>
+        <button class="button" onclick="changeEmbed('https://u.hosteriafutaleufu.cl')">Waves!</button>
+        <button class="button" onclick="changeEmbed('https://gglauncherv6.coolscience.cfd')">truffled</button>
+        <button class="button" onclick="changeEmbed('https://frogiesarca.de')">froggiesarcade</button>
+        <button class="button" onclick="changeEmbed('https://web.cloudmoonapp.com/')">cloudmoon</button>
+        <button class="button" onclick="changeEmbed('https://bulbasaurchat.github.io')">bulbasaur</button>
+        <button class="button" onclick="changeEmbed('https://duckmath.org/')">Duck</button>
+
+      </div>
+    </div>
+
+    <div id="viewerContainer"></div>
+    <button id="fullscreenButton" onclick="toggleFullscreen()" style="display:none;">Go Fullscreen</button>
+    <button id="toggleModeButton" onclick="toggleMode()" style="display:none;">Use iframe</button>
+
+    <!-- SANDBOX PREVIEW MODAL -->
+    <div id="sandboxModal" role="dialog" aria-hidden="true">
+      <div id="sandboxContent">
+        <div id="sandboxToolbar">
+          <button class="miniBtn" id="sandboxClose" onclick="closeSandbox()">Close</button>
+          <button class="miniBtn" id="sandboxOpenNew" onclick="openSandboxInNewWindow()">Open in new window</button>
+        </div>
+        <iframe id="sandboxIframe" sandbox="allow-scripts allow-forms"></iframe>
+      </div>
+    </div>
+
+    <script>
+      let useIframe = false;
+      const PASSWORD = 'nobobneth';
+
+      function handleUnlockOrRun(e) {
+        if (e.key !== 'Enter') return;
+        const raw = e.target.value || '';
+        const val = raw.trim();
+        if (val === PASSWORD) {
+          unlockPortal();
+          // clear input for security
+          e.target.value = '';
+        } else {
+          // open sandboxed preview of what the user typed
+          openSandbox(val);
+          // keep the input text (or clear, choose to clear to be tidy)
+          e.target.value = '';
+        }
+      }
+
+      function unlockPortal() {
+        const lock = document.getElementById('lockScreen');
+        const portal = document.getElementById('portalContent');
+        lock.style.display = 'none';
+        portal.style.display = 'block';
+        document.getElementById('fullscreenButton').style.display = 'inline-block';
+        document.getElementById('toggleModeButton').style.display = 'inline-block';
+      }
+
+      function openSandbox(userHtml) {
+        const modal = document.getElementById('sandboxModal');
+        const iframe = document.getElementById('sandboxIframe');
+
+        // create blob URL from user-provided html
+        const safeHtml = userHtml || '<!-- empty -->';
+        const blob = new Blob([safeHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+
+        // set iframe src to blob url; iframe has sandbox attribute to isolate it
+        iframe.src = url;
+
+        // store the blob url for optional opening in a separate window
+        iframe.dataset.blobUrl = url;
+
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeSandbox() {
+        const modal = document.getElementById('sandboxModal');
+        const iframe = document.getElementById('sandboxIframe');
+        // revoke blob URL to avoid leaks
+        const url = iframe.dataset.blobUrl;
+        if (url) {
+          try { URL.revokeObjectURL(url); } catch (_) {}
+          delete iframe.dataset.blobUrl;
+        }
+        iframe.src = 'about:blank';
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      function openSandboxInNewWindow() {
+        const iframe = document.getElementById('sandboxIframe');
+        const url = iframe.dataset.blobUrl;
+        if (!url) return;
+        // Open the blob URL in a new window/tab. This is still isolated by browser security.
+        // We do NOT attempt to bypass sandboxing or allow this new window to access the opener.
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+
+      function changeEmbed(url) {
+        const container = document.getElementById('viewerContainer');
+        container.innerHTML = '';
+        const element = document.createElement(useIframe ? 'iframe' : 'embed');
+        element.src = url;
+        element.width = '100%';
+        element.height = window.innerHeight + 'px';
+        element.className = 'embed';
+        element.allowFullscreen = true;
+        container.appendChild(element);
+        // ensure fullscreen/toggle controls visible when portal unlocked
+        document.getElementById('fullscreenButton').style.display = 'inline-block';
+        document.getElementById('toggleModeButton').style.display = 'inline-block';
+      }
+
+      window.onresize = function () {
+        const viewer = document.getElementById('viewerContainer').firstChild;
+        if (viewer) viewer.style.height = window.innerHeight + 'px';
+        const iframe = document.getElementById('sandboxIframe');
+        if (iframe) iframe.style.height = (window.innerHeight * 0.8 - 40) + 'px';
+      };
+
+      function toggleFullscreen() {
+        const viewer = document.getElementById('viewerContainer').firstChild;
+        if (!viewer) return;
+        if (viewer.requestFullscreen) viewer.requestFullscreen();
+        else if (viewer.mozRequestFullScreen) viewer.mozRequestFullScreen();
+        else if (viewer.webkitRequestFullscreen) viewer.webkitRequestFullscreen();
+        else if (viewer.msRequestFullscreen) viewer.msRequestFullscreen();
+      }
+
+      function toggleMode() {
+        useIframe = !useIframe;
+        const btn = document.getElementById('toggleModeButton');
+        btn.textContent = useIframe ? 'Use embed' : 'Use iframe';
+        const currentSrc = document.getElementById('viewerContainer').firstChild?.src;
+        if (currentSrc) changeEmbed(currentSrc);
+      }
+
+      // initialize sandbox iframe height
+      (function init() {
+        const iframe = document.getElementById('sandboxIframe');
+        iframe.style.height = (window.innerHeight * 0.8 - 40) + 'px';
+      })();
+    </script>
+  </body>
+</html>
